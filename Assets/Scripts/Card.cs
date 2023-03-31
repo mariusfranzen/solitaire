@@ -5,11 +5,14 @@ using Assets.Scripts.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class Card : MonoBehaviour
 {
     public List<Sprite> CardSprites;
     public Enums.Suits Suit;
     public int Value; // 1 - 13
+
+    private bool _active = false;
+    private bool _inPlay = false;
 
     void Start()
     {
@@ -19,31 +22,34 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
     {
     }
 
-    public void OnBeginDrag(PointerEventData eventData)
+    void OnMouseDrag()
     {
-        Debug.Log("OnBeginDrag");
+        if (_inPlay is false)
+        {
+            return;
+        }
+        Debug.Log("OnMouseDrag");
+        Vector3 newPosition = transform.position;
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        newPosition.x = mousePosition.x;
+        newPosition.y = mousePosition.y;
+        transform.position = newPosition;
     }
 
-    public void OnDrag(PointerEventData eventData)
+    private void SetActive(bool active)
     {
-        Debug.Log("OnDrag");
-        Vector3 newPos = new();
-        newPos.x += eventData.delta.x;
-        newPos.y += eventData.delta.y;
-        transform.position = newPos;
+        transform.gameObject.SetActive(active);
+        _active = active;
+        _inPlay = active;
+        transform.GetComponent<BoxCollider2D>().isTrigger = active;
     }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        Debug.Log("OnEndDrag");
-    }
-
 
     public void SetCardValue(Enums.Suits suit, int value)
     {
         Suit = suit;
         Value = value;
         transform.GetComponent<SpriteRenderer>().sprite = CardSprites.ElementAt((int)suit * 13 + value - 1);
+        SetActive(true);
     }
 
     public void SetCardValue((Enums.Suits, int) card)
@@ -51,6 +57,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
         Suit = card.Item1;
         Value = card.Item2;
         transform.GetComponent<SpriteRenderer>().sprite = CardSprites.ElementAt((int)Suit * 13 + Value - 1);
+        SetActive(true);
     }
 
     /// <summary>
@@ -59,6 +66,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
     public void DeactivateCard()
     {
         transform.GetComponent<SpriteRenderer>().sprite = null;
+        SetActive(false);
     }
 
     /// <summary>
@@ -67,6 +75,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
     public void ActivateCard()
     {
         SetCardValue(Suit, Value);
+        SetActive(true);
     }
 
     /// <summary>
@@ -75,6 +84,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
     public void HideCard()
     {
         transform.GetComponent<SpriteRenderer>().sprite = CardSprites.Find(s => s.name.Equals("card_back"));
+        _inPlay = false;
     }
 
     /// <summary>
@@ -83,5 +93,6 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
     public void RevealCard()
     {
         SetCardValue(Suit, Value);
+        _inPlay = true;
     }
 }
