@@ -107,5 +107,10 @@ public class BoardScript : MonoBehaviour
                 transform.Find($"Column{col}").Find($"card{card}").GetComponent<Card>().DeactivateCard();
             }
         }
+
+        transform.Find("Collections").Find("heartsCollection").GetComponent<Card>().DeactivateCard();
+        transform.Find("Collections").Find("spadesCollection").GetComponent<Card>().DeactivateCard();
+        transform.Find("Collections").Find("diamondsCollection").GetComponent<Card>().DeactivateCard();
+        transform.Find("Collections").Find("clubsCollection").GetComponent<Card>().DeactivateCard();
     }
 }
