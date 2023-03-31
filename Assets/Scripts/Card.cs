@@ -21,16 +21,21 @@ public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHand
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        throw new System.NotImplementedException();
+        Debug.Log("OnBeginDrag");
     }
+
     public void OnDrag(PointerEventData eventData)
     {
-        throw new System.NotImplementedException();
+        Debug.Log("OnDrag");
+        Vector3 newPos = new();
+        newPos.x += eventData.delta.x;
+        newPos.y += eventData.delta.y;
+        transform.position = newPos;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        throw new System.NotImplementedException();
+        Debug.Log("OnEndDrag");
     }
 
 
