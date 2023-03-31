@@ -19,8 +19,12 @@ public class BoardScript : MonoBehaviour
         SetUpBoard();
     }
 
-    void Update()
+    public void RestartGame()
     {
+        _shownCards = new();
+        _board = new();
+        _deck = CreateShuffledDeck();
+        SetUpBoard();
     }
 
     public void SetUpBoard()

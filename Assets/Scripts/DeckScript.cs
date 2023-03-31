@@ -16,7 +16,6 @@ public class DeckScript : MonoBehaviour
 
     void OnMouseDown()
     {
-        Debug.Log("clicked!");
         transform.parent.GetComponent<BoardScript>().NextCard();
     }
 }

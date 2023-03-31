@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Utils;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class Card : MonoBehaviour
+public class Card : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
     public List<Sprite> CardSprites;
     public Enums.Suits Suit;
@@ -17,6 +18,21 @@ public class Card : MonoBehaviour
     void Update()
     {
     }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+    public void OnDrag(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+
 
     public void SetCardValue(Enums.Suits suit, int value)
     {
