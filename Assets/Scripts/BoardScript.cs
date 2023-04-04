@@ -10,6 +10,7 @@ public class BoardScript : MonoBehaviour
 {
     private List<(Enums.Suits, int)> _deck;
     private List<(Enums.Suits, int)> _shownCards = new();
+    private List<(Enums.Suits, int)> _collectionCards = new();
 
     private List<List<(Enums.Suits, int)>> _board = new();
 
@@ -23,6 +24,7 @@ public class BoardScript : MonoBehaviour
     {
         _shownCards = new();
         _board = new();
+        _collectionCards = new();
         _deck = CreateShuffledDeck();
         SetUpBoard();
     }
@@ -60,6 +62,24 @@ public class BoardScript : MonoBehaviour
         _deck.RemoveAt(_deck.Count - 1);
 
         transform.Find("topShownCard").GetComponent<Card>().SetCardValue(nextCard.Item1, nextCard.Item2);
+    }
+
+    public List<Transform> GetCardsInPlayInColumn(int col)
+    {
+        string colName = $"Column{col}";
+        Transform column = transform.Find(colName);
+        List<Transform> cards = new();
+
+        for (int i = 0; i < 13; i++)
+        {
+            Transform card = column.GetChild(i);
+            if (card.GetComponent<Card>().InPlay)
+            {
+                cards.Add(card);
+            }
+        }
+
+        return cards;
     }
 
     private static List<(Enums.Suits, int)> CreateShuffledDeck()

@@ -1,54 +1,152 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Assets.Scripts.Utils;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class Card : MonoBehaviour
 {
     public List<Sprite> CardSprites;
     public Enums.Suits Suit;
+    public bool IsPlayCard = false;
     public int Value; // 1 - 13
+
+    [NonSerialized]
+    public bool InPlay = false;
 
     private Collider2D _collider;
     private Vector3 _originalPosition;
+    private BoardScript _mainBoardScript;
 
     private bool _active = false;
-    private bool _inPlay = false;
-
+    private int _column;
     private bool _isDragging = false;
 
-    void Awake()
+    void Start()
     {
         _collider = GetComponent<Collider2D>();
         _originalPosition = transform.position;
+        _mainBoardScript = transform.root.GetComponent<BoardScript>();
+        if (IsPlayCard is false) return;
+        _column = int.Parse(transform.parent.name.Last().ToString());
+    }
+
+    void OnMouseDragStart()
+    {
+        foreach (Transform card in transform.parent.parent.GetComponent<BoardScript>().GetCardsInPlayInColumn(_column))
+        {
+            //print(card.name);
+        }
     }
 
     void OnMouseDrag()
     {
-        if (_inPlay is false)
+        if (InPlay is false)
         {
             return;
         }
 
+        if (_isDragging is false)
+        {
+            OnMouseDragStart();
+        }
+
         _isDragging = true;
-        Vector3 newPosition = transform.position;
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        newPosition.x = mousePosition.x;
-        newPosition.y = mousePosition.y;
-        newPosition.z = -2;
-        transform.position = newPosition;
+        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
+
+        MoveCardWithMouse(transform, 0);
+        //print(cardsToMove.Count);
+        for (int i = 0; i < cardsToMove.Count; i++)
+        {
+            Transform card = cardsToMove.ElementAt(i);
+            MoveCardWithMouse(card, i + 1);
+        }
+    }
+
+    void OnMouseDragEnd()
+    {
+        // Current cards in column
+        List<Transform> cards = new();
+        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
+        bool lastCardActive = true;
+        int indexOfLastCard = 0;
+        GameObject closestColumn = GetClosestColumn();
+
+        for (int i = 0; i < 13; i++)
+        {
+            if (closestColumn is null)
+            {
+                return;
+            }
+
+            if (closestColumn.name.Contains("Collections"))
+            {
+                if (PlaceCardInCollection())
+                {
+                    return;
+                }
+            }
+
+            Transform card = closestColumn.transform.Find($"card{i}");
+            if (lastCardActive)
+            {
+                cards.Add(card);
+                indexOfLastCard = i;
+            }
+
+            if (card is null || card.GetComponent<Card>()._active is false)
+            {
+                lastCardActive = false;
+            }
+        }
+
+        ResetPosition();
+        foreach (Transform card in cardsToMove)
+        {
+            card.GetComponent<Card>().ResetPosition();
+        }
+        var targetCard = cards.ElementAt(cards.Count - 2).GetComponent<Card>();
+
+        if (IsValidPosition(targetCard.Suit, targetCard.Value))
+        {
+            cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
+            for (int i = 0; i < cardsToMove.Count; i++)
+            {
+                var card = cardsToMove.ElementAt(i).GetComponent<Card>();
+                closestColumn.transform.GetChild(indexOfLastCard + i + 1).GetComponent<Card>().SetCardValue(card.Suit, card.Value);
+                card.DeactivateCard();
+            }
+            DeactivateCard();
+            int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+            if (transform.parent.Find($"card{indexOfSibling}") is null)
+            {
+                return;
+            }
+            transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+        }
     }
 
     void OnMouseUp()
     {
-        if (_isDragging)
-        {
-            _isDragging = false;
-            OnMouseDragEnd();
-        }
+        if (_isDragging is false) return;
+        _isDragging = false;
+        OnMouseDragEnd();
+    }
+
+    /// <summary>
+    /// Moves the card along with the mouse
+    /// </summary>
+    /// <param name="card">The transform of the card</param>
+    /// <param name="index">The index of the card, with 0 being the card at the top of the selected stack</param>
+    void MoveCardWithMouse(Transform card, int index)
+    {
+        Vector3 newPosition = card.position;
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        newPosition.x = mousePosition.x;
+        newPosition.y = mousePosition.y + -0.45f * index;
+        newPosition.z = -2 - 0.1f * index;
+        card.position = newPosition;
     }
 
     GameObject GetClosestColumn()
@@ -67,49 +165,12 @@ public class Card : MonoBehaviour
         return results.ElementAt(distances.IndexOfMin()).gameObject;
     }
 
-    void OnMouseDragEnd()
+    private bool CardIsChild(Transform card)
     {
-        // Current cards in column
-        List<Transform> cards = new();
-        bool lastCardActive = true;
-        for (int i = 0; i < 13; i++)
-        {
-            var closestColumn = GetClosestColumn();
-            if (closestColumn is null)
-            {
-                return;
-            }
+        int cardIndex = int.Parse(Regex.Replace(card.name, @"[\D]", string.Empty));
+        int thisCardIndex = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty));
 
-            if (closestColumn.name.Contains("Collections"))
-            {
-                if (PlaceCardInCollection())
-                {
-                    return;
-                }
-            }
-
-            var card = closestColumn.transform.Find($"card{i}");
-            if (lastCardActive)
-            {
-                cards.Add(card);
-            }
-
-            if (card.GetComponent<Card>()._active is false)
-            {
-                lastCardActive = false;
-            }
-        }
-
-        transform.position = _originalPosition;
-        var targetCard = cards.ElementAt(cards.Count - 2).GetComponent<Card>();
-
-        if (IsValidPosition(targetCard.Suit, targetCard.Value))
-        {
-            cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
-            DeactivateCard();
-            int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
-            transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
-        }
+        return cardIndex > thisCardIndex;
     }
 
     private bool PlaceCardInCollection()
@@ -160,7 +221,7 @@ public class Card : MonoBehaviour
     private bool IsValidPosition(Enums.Suits suit, int value)
     {
         bool blackIsValid = Suit is Enums.Suits.Diamonds or Enums.Suits.Hearts;
-        bool targetIsBlack = suit is Enums.Suits.Clubs or Enums.Suits.Clubs;
+        bool targetIsBlack = suit is Enums.Suits.Clubs or Enums.Suits.Spades;
         print($"Held card: {Suit} {Value} - Target card: {suit} {value}");
         print($"blackIsValid: {blackIsValid} - targetIsBlack: {targetIsBlack}");
         print($"value: {Value} - target value: {value}");
@@ -174,7 +235,7 @@ public class Card : MonoBehaviour
     {
         transform.gameObject.SetActive(active);
         _active = active;
-        _inPlay = active;
+        InPlay = active;
         transform.GetComponent<BoxCollider2D>().isTrigger = active;
     }
 
@@ -218,7 +279,7 @@ public class Card : MonoBehaviour
     public void HideCard()
     {
         transform.GetComponent<SpriteRenderer>().sprite = CardSprites.Find(s => s.name.Equals("card_back"));
-        _inPlay = false;
+        InPlay = false;
     }
 
     /// <summary>
@@ -227,6 +288,14 @@ public class Card : MonoBehaviour
     public void RevealCard()
     {
         SetCardValue(Suit, Value);
-        _inPlay = true;
+        InPlay = true;
+    }
+
+    /// <summary>
+    /// Moves a card to its original position
+    /// </summary>
+    public void ResetPosition()
+    {
+        transform.position = _originalPosition;
     }
 }
