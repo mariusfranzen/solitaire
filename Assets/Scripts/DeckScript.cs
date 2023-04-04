@@ -4,16 +4,6 @@ using UnityEngine;
 
 public class DeckScript : MonoBehaviour
 {
-    void Start()
-    {
-        
-    }
-    
-    void Update()
-    {
-        
-    }
-
     void OnMouseDown()
     {
         transform.parent.GetComponent<BoardScript>().NextCard();

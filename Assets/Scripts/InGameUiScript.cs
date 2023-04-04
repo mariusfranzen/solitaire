@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -20,7 +18,6 @@ public class InGameUiScript : MonoBehaviour
 
     void OnClickRestart(ClickEvent evt)
     {
-        Debug.Log("Restarting");
         BoardScript.RestartGame();
     }
 }

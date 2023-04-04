@@ -12,16 +12,15 @@ public class Card : MonoBehaviour
     public bool IsPlayCard = false;
     public int Value; // 1 - 13
 
-    [NonSerialized]
-    public bool InPlay = false;
+    [NonSerialized] public bool InPlay;
 
     private Collider2D _collider;
     private Vector3 _originalPosition;
     private BoardScript _mainBoardScript;
 
-    private bool _active = false;
+    private bool _active;
     private int _column;
-    private bool _isDragging = false;
+    private bool _isDragging;
 
     void Start()
     {
@@ -56,7 +55,6 @@ public class Card : MonoBehaviour
         List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
 
         MoveCardWithMouse(transform, 0);
-        //print(cardsToMove.Count);
         for (int i = 0; i < cardsToMove.Count; i++)
         {
             Transform card = cardsToMove.ElementAt(i);
@@ -105,25 +103,31 @@ public class Card : MonoBehaviour
         {
             card.GetComponent<Card>().ResetPosition();
         }
+
         var targetCard = cards.ElementAt(cards.Count - 2).GetComponent<Card>();
 
-        if (IsValidPosition(targetCard.Suit, targetCard.Value))
+        if (IsValidPosition(targetCard.Suit, targetCard.Value) is false)
         {
-            cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
-            for (int i = 0; i < cardsToMove.Count; i++)
-            {
-                var card = cardsToMove.ElementAt(i).GetComponent<Card>();
-                closestColumn.transform.GetChild(indexOfLastCard + i + 1).GetComponent<Card>().SetCardValue(card.Suit, card.Value);
-                card.DeactivateCard();
-            }
-            DeactivateCard();
-            int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
-            if (transform.parent.Find($"card{indexOfSibling}") is null)
-            {
-                return;
-            }
-            transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+            return;
         }
+
+        cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
+        for (int i = 0; i < cardsToMove.Count; i++)
+        {
+            var card = cardsToMove.ElementAt(i).GetComponent<Card>();
+            closestColumn.transform.GetChild(indexOfLastCard + i + 1).GetComponent<Card>()
+                .SetCardValue(card.Suit, card.Value);
+            card.DeactivateCard();
+        }
+
+        DeactivateCard();
+        int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+        if (transform.parent.Find($"card{indexOfSibling}") is null)
+        {
+            return;
+        }
+
+        transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
     }
 
     void OnMouseUp()
@@ -150,7 +154,7 @@ public class Card : MonoBehaviour
 
     GameObject GetClosestColumn()
     {
-        var filter = new ContactFilter2D().NoFilter();
+        ContactFilter2D filter = new ContactFilter2D().NoFilter();
         var results = new List<Collider2D>();
         Physics2D.OverlapCollider(_collider, filter, results);
         results.RemoveAll(c => c.transform.name.Contains("card"));
@@ -160,7 +164,7 @@ public class Card : MonoBehaviour
             return null;
         }
 
-        var distances = results.Select(result => Physics2D.Distance(_collider, result).distance).ToList();
+        List<float> distances = results.Select(result => Physics2D.Distance(_collider, result).distance).ToList();
         return results.ElementAt(distances.IndexOfMin()).gameObject;
     }
 
@@ -172,9 +176,9 @@ public class Card : MonoBehaviour
         return cardIndex > thisCardIndex;
     }
 
-    private bool PlaceCardInCollection()
+    private void PlaceCardInCollection()
     {
-        var collections = transform.parent.parent.Find("Collections");
+        Transform collections = transform.parent.parent.Find("Collections");
         int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
         Card collection;
 
@@ -182,49 +186,38 @@ public class Card : MonoBehaviour
         {
             case Enums.Suits.Hearts:
                 collection = collections.Find("heartsCollection").GetComponent<Card>();
-                if (collection.Value != Value - 1 && Value != 1) return false;
-                collection.SetCardValue(Suit, Value);
-                DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
-                return true;
+                break;
 
             case Enums.Suits.Spades:
                 collection = collections.Find("spadesCollection").GetComponent<Card>();
-                if (collection.Value != Value - 1 && Value != 1) return false;
-                collection.SetCardValue(Suit, Value);
-                DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
-                return true;
+                break;
 
             case Enums.Suits.Diamonds:
                 collection = collections.Find("diamondsCollection").GetComponent<Card>();
-                if (collection.Value != Value - 1 && Value != 1) return false;
-                collection.SetCardValue(Suit, Value);
-                DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
-                return true;
+                break;
 
             case Enums.Suits.Clubs:
                 collection = collections.Find("clubsCollection").GetComponent<Card>();
-                if (collection.Value != Value - 1 && Value != 1) return false;
-                collection.SetCardValue(Suit, Value);
-                DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
-                return true;
+                break;
 
             default:
-                return false;
+                return;
         }
+
+        if (collection.Value != Value - 1 && Value != 1)
+        {
+            return;
+        }
+
+        collection.SetCardValue(Suit, Value);
+        DeactivateCard();
+        transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
     }
 
     private bool IsValidPosition(Enums.Suits suit, int value)
     {
         bool blackIsValid = Suit is Enums.Suits.Diamonds or Enums.Suits.Hearts;
         bool targetIsBlack = suit is Enums.Suits.Clubs or Enums.Suits.Spades;
-        print($"Held card: {Suit} {Value} - Target card: {suit} {value}");
-        print($"blackIsValid: {blackIsValid} - targetIsBlack: {targetIsBlack}");
-        print($"value: {Value} - target value: {value}");
-        print($"return {targetIsBlack == blackIsValid && value == Value + 1}");
 
         return targetIsBlack == blackIsValid && value == Value + 1;
     }

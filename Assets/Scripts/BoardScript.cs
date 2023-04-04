@@ -9,8 +9,6 @@ using Random = UnityEngine.Random;
 public class BoardScript : MonoBehaviour
 {
     private List<(Enums.Suits, int)> _deck;
-    private List<(Enums.Suits, int)> _shownCards = new();
-
     private List<List<(Enums.Suits, int)>> _board = new();
 
     void Start()
@@ -21,7 +19,6 @@ public class BoardScript : MonoBehaviour
 
     public void RestartGame()
     {
-        _shownCards = new();
         _board = new();
         _deck = CreateShuffledDeck();
         SetUpBoard();
@@ -29,7 +26,7 @@ public class BoardScript : MonoBehaviour
 
     public void SetUpBoard()
     {
-        int width = 7;
+        const int width = 7;
         int count = 1;
 
         for (int i = 0; i < width; i++)
@@ -55,8 +52,7 @@ public class BoardScript : MonoBehaviour
 
     public void NextCard()
     {
-        var nextCard = _deck.ElementAt(_deck.Count - 1);
-        _shownCards.Add(nextCard);
+        (Enums.Suits, int) nextCard = _deck.ElementAt(_deck.Count - 1);
         _deck.RemoveAt(_deck.Count - 1);
 
         transform.Find("topShownCard").GetComponent<Card>().SetCardValue(nextCard.Item1, nextCard.Item2);
@@ -103,7 +99,7 @@ public class BoardScript : MonoBehaviour
         return shuffledDeck;
     }
 
-    private void ActivateColumn(int columnIndex, List<(Enums.Suits, int)> cards)
+    private void ActivateColumn(int columnIndex, IReadOnlyCollection<(Enums.Suits, int)> cards)
     {
         for (int cardIndex = 0; cardIndex < cards.Count; cardIndex++)
         {
@@ -126,13 +122,9 @@ public class BoardScript : MonoBehaviour
             }
         }
 
-        print(transform.Find("Collections").Find("heartsCollection").name);
-        print(transform.Find("Collections").Find("spadesCollection").name);
-        print(transform.Find("Collections").Find("diamondsCollection").name);
-        print(transform.Find("Collections").Find("clubsCollection").name);
-        transform.Find("Collections").Find("heartsCollection").GetComponent<Card>().DeactivateCard();
-        transform.Find("Collections").Find("spadesCollection").GetComponent<Card>().DeactivateCard();
-        transform.Find("Collections").Find("diamondsCollection").GetComponent<Card>().DeactivateCard();
-        transform.Find("Collections").Find("clubsCollection").GetComponent<Card>().DeactivateCard();
+        foreach (Card card in transform.Find("Collections").GetComponentsInChildren<Card>())
+        {
+            card.DeactivateCard();
+        }
     }
 }
