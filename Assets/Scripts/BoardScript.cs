@@ -10,7 +10,6 @@ public class BoardScript : MonoBehaviour
 {
     private List<(Enums.Suits, int)> _deck;
     private List<(Enums.Suits, int)> _shownCards = new();
-    private List<(Enums.Suits, int)> _collectionCards = new();
 
     private List<List<(Enums.Suits, int)>> _board = new();
 
@@ -24,7 +23,6 @@ public class BoardScript : MonoBehaviour
     {
         _shownCards = new();
         _board = new();
-        _collectionCards = new();
         _deck = CreateShuffledDeck();
         SetUpBoard();
     }
@@ -128,6 +126,10 @@ public class BoardScript : MonoBehaviour
             }
         }
 
+        print(transform.Find("Collections").Find("heartsCollection").name);
+        print(transform.Find("Collections").Find("spadesCollection").name);
+        print(transform.Find("Collections").Find("diamondsCollection").name);
+        print(transform.Find("Collections").Find("clubsCollection").name);
         transform.Find("Collections").Find("heartsCollection").GetComponent<Card>().DeactivateCard();
         transform.Find("Collections").Find("spadesCollection").GetComponent<Card>().DeactivateCard();
         transform.Find("Collections").Find("diamondsCollection").GetComponent<Card>().DeactivateCard();

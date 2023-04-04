@@ -80,12 +80,11 @@ public class Card : MonoBehaviour
                 return;
             }
 
-            if (closestColumn.name.Contains("Collections"))
+            if (closestColumn.name.Contains("Collections") && cardsToMove.Count < 1)
             {
-                if (PlaceCardInCollection())
-                {
-                    return;
-                }
+                PlaceCardInCollection();
+                ResetPosition();
+                return;
             }
 
             Transform card = closestColumn.transform.Find($"card{i}");
@@ -186,7 +185,7 @@ public class Card : MonoBehaviour
                 if (collection.Value != Value - 1 && Value != 1) return false;
                 collection.SetCardValue(Suit, Value);
                 DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
                 return true;
 
             case Enums.Suits.Spades:
@@ -194,7 +193,7 @@ public class Card : MonoBehaviour
                 if (collection.Value != Value - 1 && Value != 1) return false;
                 collection.SetCardValue(Suit, Value);
                 DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
                 return true;
 
             case Enums.Suits.Diamonds:
@@ -202,7 +201,7 @@ public class Card : MonoBehaviour
                 if (collection.Value != Value - 1 && Value != 1) return false;
                 collection.SetCardValue(Suit, Value);
                 DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
                 return true;
 
             case Enums.Suits.Clubs:
@@ -210,7 +209,7 @@ public class Card : MonoBehaviour
                 if (collection.Value != Value - 1 && Value != 1) return false;
                 collection.SetCardValue(Suit, Value);
                 DeactivateCard();
-                transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+                transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
                 return true;
 
             default:
