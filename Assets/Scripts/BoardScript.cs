@@ -36,6 +36,8 @@ public class BoardScript : MonoBehaviour
         _shownDeck = new();
         _deck = CreateShuffledDeck();
         SetUpBoard();
+        _deckEmpty = false;
+        _shownDeckEmpty = true;
     }
 
     public void SetUpBoard()
@@ -104,12 +106,16 @@ public class BoardScript : MonoBehaviour
 
     public void ResetDeck()
     {
-        _deck.Clear();
+        _deck = new();
         _deck.AddRange(_shownDeck);
-        _deckScript.ShowStack();
-        _shownDeck.Clear();
+        _shownDeck = new();
         _topShownCard.DeactivateCard();
         _bottomShownCard.DeactivateCard();
+        if (_deck.Count <= 0) return;
+        _deckScript.ShowStack();
+        _deckEmpty = false;
+        _shownDeckEmpty = true;
+        _deck.Reverse();
     }
 
     public List<Transform> GetCardsInPlayInColumn(int col)
@@ -122,7 +128,7 @@ public class BoardScript : MonoBehaviour
         Transform column = transform.Find(colName);
         List<Transform> cards = new();
 
-        for (int i = 0; i < 13; i++)
+        for (int i = 0; i < 19; i++)
         {
             Transform card = column.GetChild(i);
             if (card.GetComponent<Card>().InPlay)
@@ -148,6 +154,11 @@ public class BoardScript : MonoBehaviour
         {
             _bottomShownCard.DeactivateCard();
         }
+    }
+
+    public void CompactRow()
+    {
+        // Iterate through all cards in row, and move them upwards by a multiple of the card number
     }
 
     private static List<(Enums.Suits, int)> CreateShuffledDeck()
@@ -190,7 +201,7 @@ public class BoardScript : MonoBehaviour
     {
         for (int col = 0; col < 7; col++)
         {
-            for (int card = 0; card < 13; card++)
+            for (int card = 0; card < 19; card++)
             {
                 transform.Find($"Column{col}").Find($"card{card}").GetComponent<Card>().DeactivateCard();
             }

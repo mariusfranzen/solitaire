@@ -12,8 +12,7 @@ public class Card : MonoBehaviour
     public bool IsPlayCard = false;
     public int Value; // 1 - 13
     public bool TopShownCard = false;
-
-    [NonSerialized] public bool InPlay = false;
+    public bool InPlay = false;
 
     private Collider2D _collider;
     [SerializeField] private Vector3 _originalPosition;
@@ -105,18 +104,34 @@ public class Card : MonoBehaviour
             card.GetComponent<Card>().ResetPosition();
         }
 
-        Card targetCard = cards.Count > 0 ? cards.ElementAt(cards.Count - 2).GetComponent<Card>() : closestColumn.transform.Find("card0").GetComponent<Card>();
+        Card targetCard = cards.Count > 1 ? cards.ElementAt(cards.Count - 2).GetComponent<Card>() : closestColumn.transform.Find("card0").GetComponent<Card>();
 
         if (IsValidPosition(targetCard.Suit, targetCard.Value, cards.Count) is false)
         {
             return;
         }
 
-        cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
+        if (cards.Count == 1)
+        {
+            print("Empty stack");
+            cards.First().GetComponent<Card>().SetCardValue(Suit, Value);
+        }
+        else
+        {
+            cards.Last().GetComponent<Card>().SetCardValue(Suit, Value);
+        }
+
+        int subtractNewStack = 1;
+        if (cards.Count > 1)
+        {
+            subtractNewStack = 0;
+        }
+        print($"subtractNewStack: {subtractNewStack}");
+
         for (int i = 0; i < cardsToMove.Count; i++)
         {
             var card = cardsToMove.ElementAt(i).GetComponent<Card>();
-            closestColumn.transform.GetChild(indexOfLastCard + i + 1).GetComponent<Card>()
+            closestColumn.transform.GetChild(indexOfLastCard + i + 1 - subtractNewStack).GetComponent<Card>()
                 .SetCardValue(card.Suit, card.Value);
             card.DeactivateCard();
         }
@@ -228,9 +243,10 @@ public class Card : MonoBehaviour
 
     private bool IsValidPosition(Enums.Suits suit, int value, int cardCount)
     {
-        if (cardCount is 0)
+        print($"suit: {suit} | value: {value} | card count: {cardCount}");
+        if (cardCount == 1)
         {
-            return true;
+            return Value == 13;
         }
 
         bool blackIsValid = Suit is Enums.Suits.Diamonds or Enums.Suits.Hearts;

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -31,7 +32,15 @@ public class CardInfo : EditorWindow
 
     public void OnSelectionChange()
     {
-        var selectedObject = Selection.activeObject.GetComponent<Card>();
+        Card selectedObject;
+        try
+        {
+            selectedObject = Selection.activeObject.GetComponent<Card>();
+        }
+        catch (NotSupportedException e)
+        {
+            return;
+        }
         if (selectedObject != null)
         {
             SerializedObject so = new(selectedObject);
