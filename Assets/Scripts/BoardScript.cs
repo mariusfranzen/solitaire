@@ -9,17 +9,29 @@ using Random = UnityEngine.Random;
 public class BoardScript : MonoBehaviour
 {
     private List<(Enums.Suits, int)> _deck;
+    private List<(Enums.Suits, int)> _shownDeck;
     private List<List<(Enums.Suits, int)>> _board = new();
+
+    private bool _deckEmpty;
+    private bool _shownDeckEmpty = true;
+
+    private Card _topShownCard;
+    private Card _bottomShownCard;
 
     void Start()
     {
+        _topShownCard = transform.Find("topShownCard").GetComponent<Card>();
+        _bottomShownCard = transform.Find("bottomShownCard").GetComponent<Card>();
+
         _deck = CreateShuffledDeck();
+        _shownDeck = new();
         SetUpBoard();
     }
 
     public void RestartGame()
     {
         _board = new();
+        _shownDeck = new();
         _deck = CreateShuffledDeck();
         SetUpBoard();
     }
@@ -52,14 +64,51 @@ public class BoardScript : MonoBehaviour
 
     public void NextCard()
     {
+        if (_deckEmpty)
+        {
+            if (_shownDeckEmpty is false)
+            {
+                ResetDeck();
+            }
+
+            return;
+        }
+
         (Enums.Suits, int) nextCard = _deck.ElementAt(_deck.Count - 1);
         _deck.RemoveAt(_deck.Count - 1);
 
-        transform.Find("topShownCard").GetComponent<Card>().SetCardValue(nextCard.Item1, nextCard.Item2);
+        _deckEmpty = _deck.Count < 1;
+
+        _shownDeck.Add(nextCard);
+        (Enums.Suits, int) previousShownCard = (_topShownCard.Suit, _topShownCard.Value);
+        _topShownCard.SetCardValue(nextCard.Item1, nextCard.Item2);
+        _topShownCard.IsPlayCard = true;
+        _topShownCard.InPlay = true;
+
+        if (_shownDeck.Count > 1)
+        {
+            _bottomShownCard.SetCardValue(previousShownCard);
+            _bottomShownCard.ActivateCard();
+        }
+
+        _shownDeckEmpty = _shownDeck.Count < 1;
+    }
+
+    public void ResetDeck()
+    {
+        _deck.Clear();
+        _deck.AddRange(_shownDeck);
+        _shownDeck.Clear();
+        _topShownCard.DeactivateCard();
+        _bottomShownCard.DeactivateCard();
     }
 
     public List<Transform> GetCardsInPlayInColumn(int col)
     {
+        if (col < 0)
+        {
+            return new List<Transform>();
+        }
         string colName = $"Column{col}";
         Transform column = transform.Find(colName);
         List<Transform> cards = new();
@@ -74,6 +123,22 @@ public class BoardScript : MonoBehaviour
         }
 
         return cards;
+    }
+
+    public void PlayedTopShownCard()
+    {
+        _shownDeck.Remove((_topShownCard.Suit, _topShownCard.Value));
+        _topShownCard.SetCardValue(_bottomShownCard.Suit, _bottomShownCard.Value);
+        _topShownCard.ActivateCard();
+
+        if (_shownDeck.Count > 1)
+        {
+            _bottomShownCard.SetCardValue(_shownDeck.ElementAt(_shownDeck.Count - 2));
+        }
+        else
+        {
+            _bottomShownCard.DeactivateCard();
+        }
     }
 
     private static List<(Enums.Suits, int)> CreateShuffledDeck()
@@ -126,5 +191,8 @@ public class BoardScript : MonoBehaviour
         {
             card.DeactivateCard();
         }
+
+        _topShownCard.DeactivateCard();
+        _bottomShownCard.DeactivateCard();
     }
 }

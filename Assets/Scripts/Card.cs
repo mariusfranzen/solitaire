@@ -11,6 +11,7 @@ public class Card : MonoBehaviour
     public Enums.Suits Suit;
     public bool IsPlayCard = false;
     public int Value; // 1 - 13
+    public bool TopShownCard = false;
 
     [NonSerialized] public bool InPlay;
 
@@ -19,7 +20,7 @@ public class Card : MonoBehaviour
     private BoardScript _mainBoardScript;
 
     private bool _active;
-    private int _column;
+    private int _column = -1;
     private bool _isDragging;
 
     void Start()
@@ -28,15 +29,15 @@ public class Card : MonoBehaviour
         _originalPosition = transform.position;
         _mainBoardScript = transform.root.GetComponent<BoardScript>();
         if (IsPlayCard is false) return;
-        _column = int.Parse(transform.parent.name.Last().ToString());
+        if (TopShownCard is false)
+        {
+            _column = int.Parse(transform.parent.name.Last().ToString());
+        }
     }
 
     void OnMouseDragStart()
     {
-        foreach (Transform card in transform.parent.parent.GetComponent<BoardScript>().GetCardsInPlayInColumn(_column))
-        {
-            //print(card.name);
-        }
+        print(transform.name);
     }
 
     void OnMouseDrag()
@@ -121,7 +122,13 @@ public class Card : MonoBehaviour
         }
 
         DeactivateCard();
-        int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+
+        if (TopShownCard)
+        {
+            _mainBoardScript.PlayedTopShownCard();
+        }
+
+        int indexOfSibling = TopShownCard ? -1 : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
         if (transform.parent.Find($"card{indexOfSibling}") is null)
         {
             return;
@@ -178,8 +185,9 @@ public class Card : MonoBehaviour
 
     private void PlaceCardInCollection()
     {
-        Transform collections = transform.parent.parent.Find("Collections");
-        int indexOfSibling = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+        Transform collections = TopShownCard ? transform.parent.Find("Collections") : transform.parent.parent.Find("Collections");
+
+        int indexOfSibling = TopShownCard ? -1 : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
         Card collection;
 
         switch (Suit)
@@ -211,6 +219,10 @@ public class Card : MonoBehaviour
 
         collection.SetCardValue(Suit, Value);
         DeactivateCard();
+        if (TopShownCard)
+        {
+            _mainBoardScript.PlayedTopShownCard();
+        }
         transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
     }
 
