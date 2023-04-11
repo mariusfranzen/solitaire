@@ -15,6 +15,7 @@ public class BoardScript : MonoBehaviour
     private bool _deckEmpty;
     private bool _shownDeckEmpty = true;
 
+    private DeckScript _deckScript;
     private Card _topShownCard;
     private Card _bottomShownCard;
 
@@ -22,6 +23,7 @@ public class BoardScript : MonoBehaviour
     {
         _topShownCard = transform.Find("topShownCard").GetComponent<Card>();
         _bottomShownCard = transform.Find("bottomShownCard").GetComponent<Card>();
+        _deckScript = transform.Find("Deck").GetComponent<DeckScript>();
 
         _deck = CreateShuffledDeck();
         _shownDeck = new();
@@ -54,6 +56,7 @@ public class BoardScript : MonoBehaviour
             count++;
         }
 
+        _deckScript.ShowStack();
         DeactivateAllCards();
 
         for (int i = 0; i < width; i++)
@@ -79,6 +82,11 @@ public class BoardScript : MonoBehaviour
 
         _deckEmpty = _deck.Count < 1;
 
+        if (_deckEmpty)
+        {
+            _deckScript.HideStack();
+        }
+
         _shownDeck.Add(nextCard);
         (Enums.Suits, int) previousShownCard = (_topShownCard.Suit, _topShownCard.Value);
         _topShownCard.SetCardValue(nextCard.Item1, nextCard.Item2);
@@ -98,6 +106,7 @@ public class BoardScript : MonoBehaviour
     {
         _deck.Clear();
         _deck.AddRange(_shownDeck);
+        _deckScript.ShowStack();
         _shownDeck.Clear();
         _topShownCard.DeactivateCard();
         _bottomShownCard.DeactivateCard();

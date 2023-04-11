@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Assets/Editor/Resources/simple-bool-display.uss?fileID=7433441132597879392&amp;guid=3b89a4cff613b09449c80e1216a142c5&amp;type=3#simple-bool-display" />
+    <ui:EnumField label="Suit:" type="Assets.Scripts.Utils.Enums+Suits, Assembly-CSharp" include-obsolete-values="false" binding-path="Suit" />
+    <ui:SliderInt picking-mode="Ignore" label="Value:" value="42" high-value="13" show-input-field="true" direction="Horizontal" binding-path="Value" />
+    <ui:Vector3Field label="Original Position" binding-path="_originalPosition" focusable="true" usage-hints="None" name="OriginalPosition" tooltip="Can&apos;t edit manually" style="visibility: visible; display: flex; flex-direction: row;" />
+    <ui:VisualElement style="flex-grow: 0; background-color: rgba(0, 0, 0, 0); flex-direction: row; margin-top: 5px; flex-shrink: 0;">
+        <SimpleBoolDisplay binding-path="IsPlayCard" Label="IsPlayCard" />
+        <SimpleBoolDisplay binding-path="InPlay" Label="InPlay" />
+        <SimpleBoolDisplay binding-path="_active" Label="Active" />
+        <SimpleBoolDisplay binding-path="_isDragging" Label="IsDragging" />
+    </ui:VisualElement>
+    <ui:IntegerField label="Column" value="42" binding-path="_column" readonly="true" />
+</ui:UXML>

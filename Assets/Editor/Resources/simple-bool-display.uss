@@ -1,0 +1,13 @@
+.bool-display {
+	background-color: rgba(0, 0, 0, 0.35);
+	padding: 5px;
+	height: 27px;
+}
+
+.bool-display.true {
+	color: green;
+}
+
+.bool-display.false {
+	color: red;
+}

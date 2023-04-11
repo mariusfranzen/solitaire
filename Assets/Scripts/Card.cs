@@ -13,15 +13,15 @@ public class Card : MonoBehaviour
     public int Value; // 1 - 13
     public bool TopShownCard = false;
 
-    [NonSerialized] public bool InPlay;
+    [NonSerialized] public bool InPlay = false;
 
     private Collider2D _collider;
-    private Vector3 _originalPosition;
+    [SerializeField] private Vector3 _originalPosition;
     private BoardScript _mainBoardScript;
 
-    private bool _active;
-    private int _column = -1;
-    private bool _isDragging;
+    [SerializeField] private bool _active = false;
+    [SerializeField] private int _column = -1;
+    [SerializeField] private bool _isDragging = false;
 
     void Start()
     {
@@ -37,7 +37,7 @@ public class Card : MonoBehaviour
 
     void OnMouseDragStart()
     {
-        print(transform.name);
+        //print(transform.name);
     }
 
     void OnMouseDrag()
@@ -105,9 +105,9 @@ public class Card : MonoBehaviour
             card.GetComponent<Card>().ResetPosition();
         }
 
-        var targetCard = cards.ElementAt(cards.Count - 2).GetComponent<Card>();
+        Card targetCard = cards.Count > 0 ? cards.ElementAt(cards.Count - 2).GetComponent<Card>() : closestColumn.transform.Find("card0").GetComponent<Card>();
 
-        if (IsValidPosition(targetCard.Suit, targetCard.Value) is false)
+        if (IsValidPosition(targetCard.Suit, targetCard.Value, cards.Count) is false)
         {
             return;
         }
@@ -226,8 +226,13 @@ public class Card : MonoBehaviour
         transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
     }
 
-    private bool IsValidPosition(Enums.Suits suit, int value)
+    private bool IsValidPosition(Enums.Suits suit, int value, int cardCount)
     {
+        if (cardCount is 0)
+        {
+            return true;
+        }
+
         bool blackIsValid = Suit is Enums.Suits.Diamonds or Enums.Suits.Hearts;
         bool targetIsBlack = suit is Enums.Suits.Clubs or Enums.Suits.Spades;
 
