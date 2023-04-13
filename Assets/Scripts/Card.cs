@@ -57,7 +57,7 @@ public class Card : MonoBehaviour
         {
             _beforeOffsetPosition = transform.position;
             Vector3 offset = _originalPosition;
-            offset.y -= 0.3f * IndexInActiveStack;
+            offset.y -= 0.25f * IndexInActiveStack;
             transform.position = offset;
         }
         else
