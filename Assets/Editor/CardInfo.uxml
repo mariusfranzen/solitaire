@@ -8,6 +8,8 @@
         <SimpleBoolDisplay binding-path="InPlay" Label="InPlay" />
         <SimpleBoolDisplay binding-path="_active" Label="Active" />
         <SimpleBoolDisplay binding-path="_isDragging" Label="IsDragging" />
+        <SimpleBoolDisplay binding-path="_shouldBeOffset" Label="ShouldOffset" />
     </ui:VisualElement>
     <ui:IntegerField label="Column" value="42" binding-path="_column" readonly="true" />
+    <ui:IntegerField label="Index" value="42" binding-path="CardIndex" readonly="true" />
 </ui:UXML>

@@ -156,11 +156,6 @@ public class BoardScript : MonoBehaviour
         }
     }
 
-    public void CompactRow()
-    {
-        // Iterate through all cards in row, and move them upwards by a multiple of the card number
-    }
-
     private static List<(Enums.Suits, int)> CreateShuffledDeck()
     {
         List<(Enums.Suits, int)> orderedDeck = new();

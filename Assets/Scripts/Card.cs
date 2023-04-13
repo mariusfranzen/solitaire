@@ -1,9 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Assets.Scripts.Utils;
+using Unity.VisualScripting;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 public class Card : MonoBehaviour
 {
@@ -13,9 +14,25 @@ public class Card : MonoBehaviour
     public int Value; // 1 - 13
     public bool TopShownCard = false;
     public bool InPlay = false;
+    public int CardIndex = -1;
+    public int IndexInActiveStack;
+    [DoNotSerialize]public Vector3 BeforeMovePosition;
+
+    [SerializeProperty("ShouldBeOffset")]
+    public bool _shouldBeOffset = false;
+    public bool ShouldBeOffset
+    {
+        get => _shouldBeOffset;
+        set
+        {
+            OnShouldBeOffsetChange(value);
+            _shouldBeOffset = value;
+        }
+    }
 
     private Collider2D _collider;
     [SerializeField] private Vector3 _originalPosition;
+    [SerializeField] private Vector3 _beforeOffsetPosition;
     private BoardScript _mainBoardScript;
 
     [SerializeField] private bool _active = false;
@@ -26,17 +43,39 @@ public class Card : MonoBehaviour
     {
         _collider = GetComponent<Collider2D>();
         _originalPosition = transform.position;
+
         _mainBoardScript = transform.root.GetComponent<BoardScript>();
         if (IsPlayCard is false) return;
-        if (TopShownCard is false)
+        if (TopShownCard is true) return;
+        _column = int.Parse(transform.parent.name.Last().ToString());
+        CardIndex = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty));
+    }
+
+    void OnShouldBeOffsetChange(bool shouldOffset)
+    {
+        if (shouldOffset)
         {
-            _column = int.Parse(transform.parent.name.Last().ToString());
+            _beforeOffsetPosition = transform.position;
+            Vector3 offset = _originalPosition;
+            offset.y -= 0.3f * IndexInActiveStack;
+            transform.position = offset;
+        }
+        else
+        {
+            transform.position = _beforeOffsetPosition;
         }
     }
 
     void OnMouseDragStart()
     {
-        //print(transform.name);
+        BeforeMovePosition = transform.position;
+        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
+        
+        for (int i = 0; i < cardsToMove.Count; i++)
+        {
+            Transform card = cardsToMove.ElementAt(i);
+            card.GetComponent<Card>().BeforeMovePosition = card.position;
+        }
     }
 
     void OnMouseDrag()
@@ -113,7 +152,6 @@ public class Card : MonoBehaviour
 
         if (cards.Count == 1)
         {
-            print("Empty stack");
             cards.First().GetComponent<Card>().SetCardValue(Suit, Value);
         }
         else
@@ -126,13 +164,14 @@ public class Card : MonoBehaviour
         {
             subtractNewStack = 0;
         }
-        print($"subtractNewStack: {subtractNewStack}");
 
         for (int i = 0; i < cardsToMove.Count; i++)
         {
             var card = cardsToMove.ElementAt(i).GetComponent<Card>();
-            closestColumn.transform.GetChild(indexOfLastCard + i + 1 - subtractNewStack).GetComponent<Card>()
-                .SetCardValue(card.Suit, card.Value);
+            var newCard = closestColumn.transform.GetChild(indexOfLastCard + i + 1 - subtractNewStack)
+                .GetComponent<Card>();
+            newCard.SetCardValue(card.Suit, card.Value);
+            card.ShouldBeOffset = false;
             card.DeactivateCard();
         }
 
@@ -144,12 +183,24 @@ public class Card : MonoBehaviour
         }
 
         int indexOfSibling = TopShownCard ? -1 : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+
+        OffsetStack(int.Parse(closestColumn.name.Last().ToString()));
         if (transform.parent.Find($"card{indexOfSibling}") is null)
         {
             return;
         }
 
         transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+    }
+
+    void OffsetStack(int col)
+    {
+        List<Card> cardsToOffset = _mainBoardScript.GetCardsInPlayInColumn(col).Select(t => t.GetComponent<Card>()).ToList();
+        for (int i = 0; i < cardsToOffset.Count; i++)
+        {
+            cardsToOffset.ElementAt(i).IndexInActiveStack = i;
+            cardsToOffset.ElementAt(i).ShouldBeOffset = true;
+        }
     }
 
     void OnMouseUp()
@@ -243,7 +294,6 @@ public class Card : MonoBehaviour
 
     private bool IsValidPosition(Enums.Suits suit, int value, int cardCount)
     {
-        print($"suit: {suit} | value: {value} | card count: {cardCount}");
         if (cardCount == 1)
         {
             return Value == 13;
@@ -321,6 +371,6 @@ public class Card : MonoBehaviour
     /// </summary>
     public void ResetPosition()
     {
-        transform.position = _originalPosition;
+        transform.position = BeforeMovePosition;
     }
 }
