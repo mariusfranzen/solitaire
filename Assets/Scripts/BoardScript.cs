@@ -6,6 +6,8 @@ using Random = UnityEngine.Random;
 
 public class BoardScript : MonoBehaviour
 {
+    public Sprite SelectedCardBack;
+
     private List<(Enums.Suits, int)> _deck;
     private List<(Enums.Suits, int)> _shownDeck;
     private List<List<(Enums.Suits, int)>> _board = new();
@@ -141,10 +143,14 @@ public class BoardScript : MonoBehaviour
     {
         _shownDeck.Remove((_topShownCard.Suit, _topShownCard.Value));
 
-        if (_shownDeck.Count > 1)
+        if (_shownDeck.Count > 0)
         {
             _topShownCard.SetCardValue(_bottomShownCard);
             _topShownCard.ActivateCard();
+        }
+
+        if (_shownDeck.Count > 1)
+        {
             _bottomShownCard.SetCardValue(_shownDeck.ElementAt(_shownDeck.Count - 2));
         }
         else
@@ -198,10 +204,16 @@ public class BoardScript : MonoBehaviour
         {
             for (int card = 0; card < 19; card++)
             {
-                transform.Find($"Column{col}")
+                var cardScript = transform.Find($"Column{col}")
                     .Find($"card{card}")
-                    .GetComponent<Card>()
-                    .DeactivateCard();
+                    .GetComponent<Card>();
+
+                cardScript.DeactivateCard();
+
+                if (cardScript.ShouldBeOffset)
+                {
+                    cardScript.ShouldBeOffset = false;
+                }
             }
         }
 

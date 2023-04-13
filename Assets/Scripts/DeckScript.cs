@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class DeckScript : MonoBehaviour
 {
-    public Sprite CardBack;
-
     void OnMouseDown()
     {
         transform.parent.GetComponent<BoardScript>().NextCard();
@@ -16,6 +14,6 @@ public class DeckScript : MonoBehaviour
 
     public void ShowStack()
     {
-        transform.GetComponent<SpriteRenderer>().sprite = CardBack;
+        transform.GetComponent<SpriteRenderer>().sprite = transform.parent.GetComponent<BoardScript>().SelectedCardBack;
     }
 }

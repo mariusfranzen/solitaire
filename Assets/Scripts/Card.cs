@@ -383,7 +383,7 @@ public class Card : MonoBehaviour
     /// </summary>
     public void HideCard()
     {
-        transform.GetComponent<SpriteRenderer>().sprite = CardSprites.Find(s => s.name.Equals("card_back"));
+        transform.GetComponent<SpriteRenderer>().sprite = _mainBoardScript.SelectedCardBack;
         InPlay = false;
     }
 
