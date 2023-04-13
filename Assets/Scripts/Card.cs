@@ -330,6 +330,14 @@ public class Card : MonoBehaviour
         SetActive(true);
     }
 
+    public void SetCardValue(Card card)
+    {
+        Suit = card.Suit;
+        Value = card.Value;
+        transform.GetComponent<SpriteRenderer>().sprite = CardSprites.ElementAt((int)Suit * 13 + Value - 1);
+        SetActive(true);
+    }
+
     /// <summary>
     /// Hides the card completely
     /// </summary>

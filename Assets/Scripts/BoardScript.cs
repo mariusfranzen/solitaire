@@ -143,11 +143,11 @@ public class BoardScript : MonoBehaviour
     public void PlayedTopShownCard()
     {
         _shownDeck.Remove((_topShownCard.Suit, _topShownCard.Value));
-        _topShownCard.SetCardValue(_bottomShownCard.Suit, _bottomShownCard.Value);
-        _topShownCard.ActivateCard();
 
         if (_shownDeck.Count > 1)
         {
+            _topShownCard.SetCardValue(_bottomShownCard);
+            _topShownCard.ActivateCard();
             _bottomShownCard.SetCardValue(_shownDeck.ElementAt(_shownDeck.Count - 2));
         }
         else
@@ -171,7 +171,7 @@ public class BoardScript : MonoBehaviour
 
         for (int i = 1; i < 53; i++)
         {
-            int index = Random.Range(0, orderedDeck.Count - 1);
+            int index = Random.Range(0, orderedDeck.Count);
             shuffledDeck.Add(orderedDeck.ElementAt(index));
             orderedDeck.RemoveAt(index);
         }
