@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Utils;
@@ -25,9 +23,7 @@ public class BoardScript : MonoBehaviour
         _bottomShownCard = transform.Find("bottomShownCard").GetComponent<Card>();
         _deckScript = transform.Find("Deck").GetComponent<DeckScript>();
 
-        _deck = CreateShuffledDeck();
-        _shownDeck = new();
-        SetUpBoard();
+        RestartGame();
     }
 
     public void RestartGame()
@@ -124,6 +120,7 @@ public class BoardScript : MonoBehaviour
         {
             return new List<Transform>();
         }
+
         string colName = $"Column{col}";
         Transform column = transform.Find(colName);
         List<Transform> cards = new();
@@ -183,7 +180,10 @@ public class BoardScript : MonoBehaviour
     {
         for (int cardIndex = 0; cardIndex < cards.Count; cardIndex++)
         {
-            var card = transform.Find($"Column{columnIndex}").Find($"card{cardIndex}").GetComponent<Card>();
+            var card = transform.Find($"Column{columnIndex}")
+                .Find($"card{cardIndex}")
+                .GetComponent<Card>();
+
             card.SetCardValue(cards.ElementAt(cardIndex));
             if (cards.Count > cardIndex + 1)
             {
@@ -198,7 +198,10 @@ public class BoardScript : MonoBehaviour
         {
             for (int card = 0; card < 19; card++)
             {
-                transform.Find($"Column{col}").Find($"card{card}").GetComponent<Card>().DeactivateCard();
+                transform.Find($"Column{col}")
+                    .Find($"card{card}")
+                    .GetComponent<Card>()
+                    .DeactivateCard();
             }
         }
 

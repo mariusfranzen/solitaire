@@ -11,15 +11,15 @@ public class Card : MonoBehaviour
     public List<Sprite> CardSprites;
     public Enums.Suits Suit;
     public bool IsPlayCard = false;
-    public int Value; // 1 - 13
+    public int Value;
     public bool TopShownCard = false;
     public bool InPlay = false;
     public int CardIndex = -1;
     public int IndexInActiveStack;
-    [DoNotSerialize]public Vector3 BeforeMovePosition;
+    [DoNotSerialize] public Vector3 BeforeMovePosition;
 
-    [SerializeProperty("ShouldBeOffset")]
-    public bool _shouldBeOffset = false;
+    [SerializeProperty("ShouldBeOffset")] public bool _shouldBeOffset = false;
+
     public bool ShouldBeOffset
     {
         get => _shouldBeOffset;
@@ -46,7 +46,7 @@ public class Card : MonoBehaviour
 
         _mainBoardScript = transform.root.GetComponent<BoardScript>();
         if (IsPlayCard is false) return;
-        if (TopShownCard is true) return;
+        if (TopShownCard) return;
         _column = int.Parse(transform.parent.name.Last().ToString());
         CardIndex = int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty));
     }
@@ -69,8 +69,11 @@ public class Card : MonoBehaviour
     void OnMouseDragStart()
     {
         BeforeMovePosition = transform.position;
-        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
-        
+        List<Transform> cardsToMove = _mainBoardScript
+            .GetCardsInPlayInColumn(_column)
+            .Where(CardIsChild)
+            .ToList();
+
         for (int i = 0; i < cardsToMove.Count; i++)
         {
             Transform card = cardsToMove.ElementAt(i);
@@ -91,7 +94,10 @@ public class Card : MonoBehaviour
         }
 
         _isDragging = true;
-        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
+        List<Transform> cardsToMove = _mainBoardScript
+            .GetCardsInPlayInColumn(_column)
+            .Where(CardIsChild)
+            .ToList();
 
         MoveCardWithMouse(transform, 0);
         for (int i = 0; i < cardsToMove.Count; i++)
@@ -105,7 +111,11 @@ public class Card : MonoBehaviour
     {
         // Current cards in column
         List<Transform> cards = new();
-        List<Transform> cardsToMove = _mainBoardScript.GetCardsInPlayInColumn(_column).Where(CardIsChild).ToList();
+        List<Transform> cardsToMove = _mainBoardScript
+            .GetCardsInPlayInColumn(_column)
+            .Where(CardIsChild)
+            .ToList();
+
         bool lastCardActive = true;
         int indexOfLastCard = 0;
         GameObject closestColumn = GetClosestColumn();
@@ -143,7 +153,9 @@ public class Card : MonoBehaviour
             card.GetComponent<Card>().ResetPosition();
         }
 
-        Card targetCard = cards.Count > 1 ? cards.ElementAt(cards.Count - 2).GetComponent<Card>() : closestColumn.transform.Find("card0").GetComponent<Card>();
+        Card targetCard = cards.Count > 1
+            ? cards.ElementAt(cards.Count - 2).GetComponent<Card>()
+            : closestColumn.transform.Find("card0").GetComponent<Card>();
 
         if (IsValidPosition(targetCard.Suit, targetCard.Value, cards.Count) is false)
         {
@@ -170,6 +182,7 @@ public class Card : MonoBehaviour
             var card = cardsToMove.ElementAt(i).GetComponent<Card>();
             var newCard = closestColumn.transform.GetChild(indexOfLastCard + i + 1 - subtractNewStack)
                 .GetComponent<Card>();
+
             newCard.SetCardValue(card.Suit, card.Value);
             card.ShouldBeOffset = false;
             card.DeactivateCard();
@@ -182,7 +195,9 @@ public class Card : MonoBehaviour
             _mainBoardScript.PlayedTopShownCard();
         }
 
-        int indexOfSibling = TopShownCard ? -1 : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+        int indexOfSibling = TopShownCard
+            ? -1
+            : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
 
         OffsetStack(int.Parse(closestColumn.name.Last().ToString()));
         if (transform.parent.Find($"card{indexOfSibling}") is null)
@@ -190,12 +205,17 @@ public class Card : MonoBehaviour
             return;
         }
 
-        transform.parent.Find($"card{indexOfSibling}").GetComponent<Card>().RevealCard();
+        transform.parent.Find($"card{indexOfSibling}")
+            .GetComponent<Card>()
+            .RevealCard();
     }
 
     void OffsetStack(int col)
     {
-        List<Card> cardsToOffset = _mainBoardScript.GetCardsInPlayInColumn(col).Select(t => t.GetComponent<Card>()).ToList();
+        List<Card> cardsToOffset =
+            _mainBoardScript.GetCardsInPlayInColumn(col)
+                .Select(t => t.GetComponent<Card>())
+                .ToList();
         for (int i = 0; i < cardsToOffset.Count; i++)
         {
             cardsToOffset.ElementAt(i).IndexInActiveStack = i;
@@ -215,7 +235,7 @@ public class Card : MonoBehaviour
     /// </summary>
     /// <param name="card">The transform of the card</param>
     /// <param name="index">The index of the card, with 0 being the card at the top of the selected stack</param>
-    void MoveCardWithMouse(Transform card, int index)
+    static void MoveCardWithMouse(Transform card, int index)
     {
         Vector3 newPosition = card.position;
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -237,7 +257,9 @@ public class Card : MonoBehaviour
             return null;
         }
 
-        List<float> distances = results.Select(result => Physics2D.Distance(_collider, result).distance).ToList();
+        List<float> distances = results.Select(result =>
+            Physics2D.Distance(_collider, result).distance
+        ).ToList();
         return results.ElementAt(distances.IndexOfMin()).gameObject;
     }
 
@@ -251,9 +273,14 @@ public class Card : MonoBehaviour
 
     private void PlaceCardInCollection()
     {
-        Transform collections = TopShownCard ? transform.parent.Find("Collections") : transform.parent.parent.Find("Collections");
+        Transform collections = TopShownCard
+            ? transform.parent.Find("Collections")
+            : transform.parent.parent.Find("Collections");
 
-        int indexOfSibling = TopShownCard ? -1 : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+        int indexOfSibling = TopShownCard
+            ? -1
+            : int.Parse(Regex.Replace(transform.name, @"[\D]", string.Empty)) - 1;
+
         Card collection;
 
         switch (Suit)
@@ -289,6 +316,7 @@ public class Card : MonoBehaviour
         {
             _mainBoardScript.PlayedTopShownCard();
         }
+
         transform.parent.Find($"card{indexOfSibling}")?.GetComponent<Card>().RevealCard();
     }
 
@@ -324,18 +352,12 @@ public class Card : MonoBehaviour
 
     public void SetCardValue((Enums.Suits, int) card)
     {
-        Suit = card.Item1;
-        Value = card.Item2;
-        transform.GetComponent<SpriteRenderer>().sprite = CardSprites.ElementAt((int)Suit * 13 + Value - 1);
-        SetActive(true);
+        SetCardValue(card.Item1, card.Item2);
     }
 
     public void SetCardValue(Card card)
     {
-        Suit = card.Suit;
-        Value = card.Value;
-        transform.GetComponent<SpriteRenderer>().sprite = CardSprites.ElementAt((int)Suit * 13 + Value - 1);
-        SetActive(true);
+        SetCardValue(card.Suit, card.Value);
     }
 
     /// <summary>
