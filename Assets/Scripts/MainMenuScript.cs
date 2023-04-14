@@ -42,13 +42,13 @@ public class MainMenuScript : MonoBehaviour
     public void SetVolumeMusic(float volume)
     {
         PlayerPrefs.SetFloat("musicVolume", volume);
-        AudioMixer.SetFloat("MusicVolume", volume);
+        AudioMixer.SetFloat("MusicVolume", Mathf.Log(volume) * 20);
     }
 
     public void SetVolumeEffects(float volume)
     {
         PlayerPrefs.SetFloat("effectsVolume", volume);
-        AudioMixer.SetFloat("EffectsVolume", volume);
+        AudioMixer.SetFloat("EffectsVolume", Mathf.Log(volume) * 20);
     }
 
     public void SetCardBack(int option)
