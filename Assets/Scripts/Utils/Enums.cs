@@ -9,5 +9,17 @@
             Diamonds,
             Clubs
         }
+
+        public enum CardBacks
+        {
+            BlueOrnate,
+            BlackAndGold
+        }
+
+        public enum Backgrounds
+        {
+            GreenFuzzy,
+            Wood
+        }
     }
 }

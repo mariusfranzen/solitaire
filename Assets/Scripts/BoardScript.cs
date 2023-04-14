@@ -7,6 +7,7 @@ using Random = UnityEngine.Random;
 public class BoardScript : MonoBehaviour
 {
     public Sprite SelectedCardBack;
+    public List<Sprite> AvailableCardBacks;
 
     private List<(Enums.Suits, int)> _deck;
     private List<(Enums.Suits, int)> _shownDeck;
@@ -21,11 +22,22 @@ public class BoardScript : MonoBehaviour
 
     void Start()
     {
+        LoadSettings();
         _topShownCard = transform.Find("topShownCard").GetComponent<Card>();
         _bottomShownCard = transform.Find("bottomShownCard").GetComponent<Card>();
         _deckScript = transform.Find("Deck").GetComponent<DeckScript>();
 
         RestartGame();
+    }
+
+    void LoadSettings()
+    {
+        SelectedCardBack = PlayerPrefs.GetInt("cardBack") switch
+        {
+            0 => AvailableCardBacks.Find(l => l.name == "blueOrnate"),
+            1 => AvailableCardBacks.Find(l => l.name == "blackAndGold"),
+            _ => AvailableCardBacks.Find(l => l.name == "blueOrnate")
+        };
     }
 
     public void RestartGame()
